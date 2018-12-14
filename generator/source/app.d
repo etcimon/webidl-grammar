@@ -110,7 +110,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   ArgumentRest < ("optional" TypeWithExtendedAttributes ArgumentName Default) / (Type Ellipsis ArgumentName)
 
-  ArgumentName < ArgumentNameKeyword / Identifier
+  ArgumentName < ArgumentNameKeyword | Identifier
 
   Ellipsis < "..." / eps
 
@@ -180,12 +180,12 @@ asModule("webidl.grammar","../source/webidl/grammar",
     ("symbol" Null) /
     ("Error" Null) /
     ("FrozenArray" '<' TypeWithExtendedAttributes '>' Null) /
+    (RecordType Null) /
     PromiseType /
     (PrimitiveType Null) /
     (StringType Null) /
     (Identifier Null) /
-    (BufferRelatedType Null) /
-    (RecordType Null)
+    (BufferRelatedType Null)
 
   PrimitiveType <
     UnsignedIntegerType /
@@ -200,7 +200,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   UnsignedIntegerType < "unsigned"? IntegerType
 
-  IntegerType < "short" / "long" / ("long" "long")
+  IntegerType < "short" / ("long" "long") / "long"
 
   StringType < "ByteString" / "DOMString" / "USVString"
 
@@ -240,21 +240,6 @@ asModule("webidl.grammar","../source/webidl/grammar",
   ExtendedAttribute < ExtendedAttributeArgList / ExtendedAttributeNamedArgList / ExtendedAttributeIdent / ExtendedAttributeIdentList / ExtendedAttributeNoArgs
 
   Other <
-    Integer /
-    Float /
-    Identifier /
-    String /
-    Other2 /
-    '-' /
-    "-Infinity" /
-    '.' /
-    "..." /
-    ':' /
-    ';' /
-    '<' /
-    '=' /
-    '>' /
-    '?' /
     "ByteString" /
     "DOMString" /
     "FrozenArray" /
@@ -278,6 +263,21 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "true" /
     "unsigned" /
     "void" /
+    Integer /
+    Float /
+    Identifier /
+    String /
+    Other2 /
+    '-' /
+    "-Infinity" /
+    '.' /
+    "..." /
+    ':' /
+    ';' /
+    '<' /
+    '=' /
+    '>' /
+    '?' /
     ArgumentNameKeyword /
     BufferRelatedType
 
@@ -287,7 +287,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Integer <~ '-'? ([1-9] [0-9]*) / ('0' [Xx] [0-9A-Fa-f]+) / ('0' [0-7]*)
 
-  Float <~ '-'? ((([0-9]+ '.' [0-9]*) / ([0-9]* '.' [0-9]+))([Ee] [+-]? [0-9]+)?) / ([0-9]+ [Ee] [+-]? [0-9]+)
+  Float <~ '-'? ((([0-9]+ '.' [0-9]*) / ([0-9]* '.' [0-9]+))(('E' / 'e') ('+' / '-')? [0-9]+)?) / ([0-9]+ ('E' / 'e') ('+' / '-')? [0-9]+)
 
   Identifier <~ '_'? [A-Za-z] [0-9A-Z_a-z-]*
 
@@ -301,7 +301,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Other2 <~ [^\t\n\r 0-9A-Za-z]
 
-  ArgumentNameKeyword <-
+  ArgumentNameKeyword <
     "attribute" /
     "callback" /
     "const" /
