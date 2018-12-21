@@ -21,7 +21,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
   CallbackRestOrInterface <
     CallbackRest / ("interface" InterfaceRest)
 
-  InterfaceOrMixin < InterfaceRest / MixinRest
+  InterfaceOrMixin < MixinRest / InterfaceRest
 
   InterfaceRest < Identifier Inheritance '{' InterfaceMembers '}' ';'
 
@@ -32,7 +32,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
     PartialDictionary /
     Namespace
 
-  PartialInterfaceOrPartialMixin < PartialInterfaceRest / MixinRest
+  PartialInterfaceOrPartialMixin < MixinRest / PartialInterfaceRest
 
   PartialInterfaceRest < Identifier '{' InterfaceMembers '}' ';'
 
@@ -52,13 +52,13 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   MixinRest < "mixin" Identifier '{' MixinMembers '}' ';'
 
-  MixinMembers < (ExtendedAttributeList MixinMember) / eps
+  MixinMembers < (ExtendedAttributeList MixinMember)+ / eps
 
   MixinMember <
     Const /
+    (ReadOnly AttributeRest) /
     RegularOperation /
-    Stringifier /
-    (ReadOnly AttributeRest)
+    Stringifier
 
   IncludesStatement < Identifier "includes" Identifier ';'
 
@@ -86,13 +86,13 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   AttributeName < AttributeNameKeyword / Identifier
 
-  AttributeNameKeyword < "required"
+  AttributeNameKeyword <- "required" !Identifier
 
   ReadOnly < "readonly" / eps
 
   DefaultValue < ConstValue / String / ('[' ']')
 
-  Operation < RegularOperation / SpecialOperation
+  Operation < SpecialOperation / RegularOperation
 
   RegularOperation < ReturnType OperationRest
 
@@ -166,7 +166,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   TypeWithExtendedAttributes < ExtendedAttributeList Type
 
-  SingleType < "any" / NonAnyType
+  SingleType <- ("any" !Identifier) / NonAnyType
 
   UnionType < '(' UnionMemberType ("or" UnionMemberType)+ ')'
 
@@ -174,11 +174,11 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   SequenceType < "sequence" '<' TypeWithExtendedAttributes '>' Null
 
-  NonAnyType <
+  NonAnyType <-
     (SequenceType) /
-    ("object" Null) /
-    ("symbol" Null) /
-    ("Error" Null) /
+    ("object" (!Identifier Spacing Null)) /
+    ("symbol" (!Identifier Spacing Null)) /
+    ("Error" (!Identifier Spacing Null)) /
     ("FrozenArray" '<' TypeWithExtendedAttributes '>' Null) /
     (RecordType Null) /
     PromiseType /
@@ -202,7 +202,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   IntegerType < "short" / ("long" "long") / "long"
 
-  StringType < "ByteString" / "DOMString" / "USVString"
+  StringType <- ("ByteString" / "DOMString" / "USVString") !(Identifier)
 
   PromiseType < "Promise" '<' ReturnType '>'
 
@@ -301,8 +301,8 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Other2 <~ [^\t\n\r 0-9A-Za-z]
 
-  ArgumentNameKeyword <
-    "attribute" /
+  ArgumentNameKeyword <-
+    ("attribute" /
     "callback" /
     "const" /
     "deleter" /
@@ -322,7 +322,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "static" /
     "stringifier" /
     "typedef" /
-    "unrestricted"
+    "unrestricted") !Identifier
 
   ExtendedAttributeNoArgs < Identifier
 

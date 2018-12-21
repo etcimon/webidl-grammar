@@ -20,7 +20,7 @@ WebIDL:
   CallbackRestOrInterface <
     CallbackRest / ("interface" InterfaceRest)
 
-  InterfaceOrMixin < InterfaceRest / MixinRest
+  InterfaceOrMixin < MixinRest / InterfaceRest
 
   InterfaceRest < Identifier Inheritance '{' InterfaceMembers '}' ';'
 
@@ -31,7 +31,7 @@ WebIDL:
     PartialDictionary /
     Namespace
 
-  PartialInterfaceOrPartialMixin < PartialInterfaceRest / MixinRest
+  PartialInterfaceOrPartialMixin < MixinRest / PartialInterfaceRest
 
   PartialInterfaceRest < Identifier '{' InterfaceMembers '}' ';'
 
@@ -51,13 +51,13 @@ WebIDL:
 
   MixinRest < "mixin" Identifier '{' MixinMembers '}' ';'
 
-  MixinMembers < (ExtendedAttributeList MixinMember) / eps
+  MixinMembers < (ExtendedAttributeList MixinMember)+ / eps
 
   MixinMember <
     Const /
+    (ReadOnly AttributeRest) /
     RegularOperation /
-    Stringifier /
-    (ReadOnly AttributeRest)
+    Stringifier
 
   IncludesStatement < Identifier "includes" Identifier ';'
 
@@ -85,13 +85,13 @@ WebIDL:
 
   AttributeName < AttributeNameKeyword / Identifier
 
-  AttributeNameKeyword < "required"
+  AttributeNameKeyword <- "required" !Identifier
 
   ReadOnly < "readonly" / eps
 
   DefaultValue < ConstValue / String / ('[' ']')
 
-  Operation < RegularOperation / SpecialOperation
+  Operation < SpecialOperation / RegularOperation
 
   RegularOperation < ReturnType OperationRest
 
@@ -141,7 +141,7 @@ WebIDL:
 
   NamespaceMember < RegularOperation / ("readonly" AttributeRest)
 
-  Dictionary < "dictionary" Identifier Inheritance '{' DictionaryMembers '}' '(;'
+  Dictionary < "dictionary" Identifier Inheritance '{' DictionaryMembers '}' ';'
 
   DictionaryMembers < DictionaryMember+ / eps
 
@@ -165,7 +165,7 @@ WebIDL:
 
   TypeWithExtendedAttributes < ExtendedAttributeList Type
 
-  SingleType < "any" / NonAnyType
+  SingleType <- ("any" !Identifier) / NonAnyType
 
   UnionType < '(' UnionMemberType ("or" UnionMemberType)+ ')'
 
@@ -173,11 +173,11 @@ WebIDL:
 
   SequenceType < "sequence" '<' TypeWithExtendedAttributes '>' Null
 
-  NonAnyType <
+  NonAnyType <-
     (SequenceType) /
-    ("object" Null) /
-    ("symbol" Null) /
-    ("Error" Null) /
+    ("object" (!Identifier Spacing Null)) /
+    ("symbol" (!Identifier Spacing Null)) /
+    ("Error" (!Identifier Spacing Null)) /
     ("FrozenArray" '<' TypeWithExtendedAttributes '>' Null) /
     (RecordType Null) /
     PromiseType /
@@ -201,7 +201,7 @@ WebIDL:
 
   IntegerType < "short" / ("long" "long") / "long"
 
-  StringType < "ByteString" / "DOMString" / "USVString"
+  StringType <- ("ByteString" / "DOMString" / "USVString") !(Identifier)
 
   PromiseType < "Promise" '<' ReturnType '>'
 
@@ -300,8 +300,8 @@ WebIDL:
 
   Other2 <~ [^\t\n\r 0-9A-Za-z]
 
-  ArgumentNameKeyword <
-    "attribute" /
+  ArgumentNameKeyword <-
+    ("attribute" /
     "callback" /
     "const" /
     "deleter" /
@@ -321,7 +321,7 @@ WebIDL:
     "static" /
     "stringifier" /
     "typedef" /
-    "unrestricted"
+    "unrestricted") !Identifier
 
   ExtendedAttributeNoArgs < Identifier
 
@@ -658,7 +658,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.InterfaceOrMixin")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing)), "WebIDL.InterfaceOrMixin")(p);
         }
         else
         {
@@ -666,7 +666,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.InterfaceOrMixin"), "InterfaceOrMixin")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing)), "WebIDL.InterfaceOrMixin"), "InterfaceOrMixin")(p);
                 memo[tuple(`InterfaceOrMixin`, p.end)] = result;
                 return result;
             }
@@ -677,12 +677,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.InterfaceOrMixin")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing)), "WebIDL.InterfaceOrMixin")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.InterfaceOrMixin"), "InterfaceOrMixin")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, InterfaceRest, Spacing)), "WebIDL.InterfaceOrMixin"), "InterfaceOrMixin")(TParseTree("", false,[], s));
         }
     }
     static string InterfaceOrMixin(GetName g)
@@ -802,7 +802,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin")(p);
         }
         else
         {
@@ -810,7 +810,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin"), "PartialInterfaceOrPartialMixin")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin"), "PartialInterfaceOrPartialMixin")(p);
                 memo[tuple(`PartialInterfaceOrPartialMixin`, p.end)] = result;
                 return result;
             }
@@ -821,12 +821,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing), pegged.peg.wrapAround!(Spacing, MixinRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin"), "PartialInterfaceOrPartialMixin")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, MixinRest, Spacing), pegged.peg.wrapAround!(Spacing, PartialInterfaceRest, Spacing)), "WebIDL.PartialInterfaceOrPartialMixin"), "PartialInterfaceOrPartialMixin")(TParseTree("", false,[], s));
         }
     }
     static string PartialInterfaceOrPartialMixin(GetName g)
@@ -1018,7 +1018,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers")(p);
         }
         else
         {
@@ -1026,7 +1026,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers"), "MixinMembers")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers"), "MixinMembers")(p);
                 memo[tuple(`MixinMembers`, p.end)] = result;
                 return result;
             }
@@ -1037,12 +1037,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers"), "MixinMembers")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, MixinMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.MixinMembers"), "MixinMembers")(TParseTree("", false,[], s));
         }
     }
     static string MixinMembers(GetName g)
@@ -1054,7 +1054,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing)), "WebIDL.MixinMember")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing)), "WebIDL.MixinMember")(p);
         }
         else
         {
@@ -1062,7 +1062,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing)), "WebIDL.MixinMember"), "MixinMember")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing)), "WebIDL.MixinMember"), "MixinMember")(p);
                 memo[tuple(`MixinMember`, p.end)] = result;
                 return result;
             }
@@ -1073,12 +1073,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing)), "WebIDL.MixinMember")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing)), "WebIDL.MixinMember")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing)), "WebIDL.MixinMember"), "MixinMember")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, Const, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ReadOnly, Spacing), pegged.peg.wrapAround!(Spacing, AttributeRest, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, Stringifier, Spacing)), "WebIDL.MixinMember"), "MixinMember")(TParseTree("", false,[], s));
         }
     }
     static string MixinMember(GetName g)
@@ -1486,7 +1486,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), "WebIDL.AttributeNameKeyword")(p);
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.literal!("required"), pegged.peg.negLookahead!(Identifier)), "WebIDL.AttributeNameKeyword")(p);
         }
         else
         {
@@ -1494,7 +1494,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), "WebIDL.AttributeNameKeyword"), "AttributeNameKeyword")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.literal!("required"), pegged.peg.negLookahead!(Identifier)), "WebIDL.AttributeNameKeyword"), "AttributeNameKeyword")(p);
                 memo[tuple(`AttributeNameKeyword`, p.end)] = result;
                 return result;
             }
@@ -1505,12 +1505,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), "WebIDL.AttributeNameKeyword")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.literal!("required"), pegged.peg.negLookahead!(Identifier)), "WebIDL.AttributeNameKeyword")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), "WebIDL.AttributeNameKeyword"), "AttributeNameKeyword")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.literal!("required"), pegged.peg.negLookahead!(Identifier)), "WebIDL.AttributeNameKeyword"), "AttributeNameKeyword")(TParseTree("", false,[], s));
         }
     }
     static string AttributeNameKeyword(GetName g)
@@ -1594,7 +1594,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing)), "WebIDL.Operation")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing)), "WebIDL.Operation")(p);
         }
         else
         {
@@ -1602,7 +1602,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing)), "WebIDL.Operation"), "Operation")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing)), "WebIDL.Operation"), "Operation")(p);
                 memo[tuple(`Operation`, p.end)] = result;
                 return result;
             }
@@ -1613,12 +1613,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing)), "WebIDL.Operation")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing)), "WebIDL.Operation")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing), pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing)), "WebIDL.Operation"), "Operation")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, SpecialOperation, Spacing), pegged.peg.wrapAround!(Spacing, RegularOperation, Spacing)), "WebIDL.Operation"), "Operation")(TParseTree("", false,[], s));
         }
     }
     static string Operation(GetName g)
@@ -2926,7 +2926,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("any"), Spacing), pegged.peg.wrapAround!(Spacing, NonAnyType, Spacing)), "WebIDL.SingleType")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("any"), pegged.peg.negLookahead!(Identifier)), NonAnyType), "WebIDL.SingleType")(p);
         }
         else
         {
@@ -2934,7 +2934,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("any"), Spacing), pegged.peg.wrapAround!(Spacing, NonAnyType, Spacing)), "WebIDL.SingleType"), "SingleType")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("any"), pegged.peg.negLookahead!(Identifier)), NonAnyType), "WebIDL.SingleType"), "SingleType")(p);
                 memo[tuple(`SingleType`, p.end)] = result;
                 return result;
             }
@@ -2945,12 +2945,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("any"), Spacing), pegged.peg.wrapAround!(Spacing, NonAnyType, Spacing)), "WebIDL.SingleType")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("any"), pegged.peg.negLookahead!(Identifier)), NonAnyType), "WebIDL.SingleType")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("any"), Spacing), pegged.peg.wrapAround!(Spacing, NonAnyType, Spacing)), "WebIDL.SingleType"), "SingleType")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("any"), pegged.peg.negLookahead!(Identifier)), NonAnyType), "WebIDL.SingleType"), "SingleType")(TParseTree("", false,[], s));
         }
     }
     static string SingleType(GetName g)
@@ -3070,7 +3070,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.wrapAround!(Spacing, SequenceType, Spacing), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("object"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("symbol"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("Error"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("FrozenArray"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("<"), Spacing), pegged.peg.wrapAround!(Spacing, TypeWithExtendedAttributes, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!(">"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, RecordType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, PromiseType, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, PrimitiveType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, StringType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, Identifier, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, BufferRelatedType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing)), "WebIDL.NonAnyType")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(SequenceType, pegged.peg.and!(pegged.peg.literal!("object"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("symbol"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("Error"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("FrozenArray"), pegged.peg.literal!("<"), TypeWithExtendedAttributes, pegged.peg.literal!(">"), Null), pegged.peg.and!(RecordType, Null), PromiseType, pegged.peg.and!(PrimitiveType, Null), pegged.peg.and!(StringType, Null), pegged.peg.and!(Identifier, Null), pegged.peg.and!(BufferRelatedType, Null)), "WebIDL.NonAnyType")(p);
         }
         else
         {
@@ -3078,7 +3078,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.wrapAround!(Spacing, SequenceType, Spacing), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("object"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("symbol"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("Error"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("FrozenArray"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("<"), Spacing), pegged.peg.wrapAround!(Spacing, TypeWithExtendedAttributes, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!(">"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, RecordType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, PromiseType, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, PrimitiveType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, StringType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, Identifier, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, BufferRelatedType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing)), "WebIDL.NonAnyType"), "NonAnyType")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(SequenceType, pegged.peg.and!(pegged.peg.literal!("object"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("symbol"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("Error"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("FrozenArray"), pegged.peg.literal!("<"), TypeWithExtendedAttributes, pegged.peg.literal!(">"), Null), pegged.peg.and!(RecordType, Null), PromiseType, pegged.peg.and!(PrimitiveType, Null), pegged.peg.and!(StringType, Null), pegged.peg.and!(Identifier, Null), pegged.peg.and!(BufferRelatedType, Null)), "WebIDL.NonAnyType"), "NonAnyType")(p);
                 memo[tuple(`NonAnyType`, p.end)] = result;
                 return result;
             }
@@ -3089,12 +3089,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.wrapAround!(Spacing, SequenceType, Spacing), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("object"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("symbol"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("Error"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("FrozenArray"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("<"), Spacing), pegged.peg.wrapAround!(Spacing, TypeWithExtendedAttributes, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!(">"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, RecordType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, PromiseType, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, PrimitiveType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, StringType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, Identifier, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, BufferRelatedType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing)), "WebIDL.NonAnyType")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(SequenceType, pegged.peg.and!(pegged.peg.literal!("object"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("symbol"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("Error"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("FrozenArray"), pegged.peg.literal!("<"), TypeWithExtendedAttributes, pegged.peg.literal!(">"), Null), pegged.peg.and!(RecordType, Null), PromiseType, pegged.peg.and!(PrimitiveType, Null), pegged.peg.and!(StringType, Null), pegged.peg.and!(Identifier, Null), pegged.peg.and!(BufferRelatedType, Null)), "WebIDL.NonAnyType")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.wrapAround!(Spacing, SequenceType, Spacing), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("object"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("symbol"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("Error"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("FrozenArray"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("<"), Spacing), pegged.peg.wrapAround!(Spacing, TypeWithExtendedAttributes, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!(">"), Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, RecordType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, PromiseType, Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, PrimitiveType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, StringType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, Identifier, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, BufferRelatedType, Spacing), pegged.peg.wrapAround!(Spacing, Null, Spacing)), Spacing)), "WebIDL.NonAnyType"), "NonAnyType")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(SequenceType, pegged.peg.and!(pegged.peg.literal!("object"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("symbol"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("Error"), pegged.peg.and!(pegged.peg.negLookahead!(Identifier), Spacing, Null)), pegged.peg.and!(pegged.peg.literal!("FrozenArray"), pegged.peg.literal!("<"), TypeWithExtendedAttributes, pegged.peg.literal!(">"), Null), pegged.peg.and!(RecordType, Null), PromiseType, pegged.peg.and!(PrimitiveType, Null), pegged.peg.and!(StringType, Null), pegged.peg.and!(Identifier, Null), pegged.peg.and!(BufferRelatedType, Null)), "WebIDL.NonAnyType"), "NonAnyType")(TParseTree("", false,[], s));
         }
     }
     static string NonAnyType(GetName g)
@@ -3286,7 +3286,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("ByteString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("DOMString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("USVString"), Spacing)), "WebIDL.StringType")(p);
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(p);
         }
         else
         {
@@ -3294,7 +3294,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("ByteString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("DOMString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("USVString"), Spacing)), "WebIDL.StringType"), "StringType")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(p);
                 memo[tuple(`StringType`, p.end)] = result;
                 return result;
             }
@@ -3305,12 +3305,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("ByteString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("DOMString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("USVString"), Spacing)), "WebIDL.StringType")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("ByteString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("DOMString"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("USVString"), Spacing)), "WebIDL.StringType"), "StringType")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(TParseTree("", false,[], s));
         }
     }
     static string StringType(GetName g)
@@ -4006,7 +4006,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("attribute"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("callback"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("const"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("deleter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("dictionary"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("enum"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("getter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("includes"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("inherit"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("interface"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("iterable"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("maplike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("namespace"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("partial"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setlike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("static"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("stringifier"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("typedef"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("unrestricted"), Spacing)), "WebIDL.ArgumentNameKeyword")(p);
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("attribute", "callback", "const", "deleter", "dictionary", "enum", "getter", "includes", "inherit", "interface", "iterable", "maplike", "namespace", "partial", "required", "setlike", "setter", "static", "stringifier", "typedef", "unrestricted"), pegged.peg.negLookahead!(Identifier)), "WebIDL.ArgumentNameKeyword")(p);
         }
         else
         {
@@ -4014,7 +4014,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("attribute"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("callback"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("const"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("deleter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("dictionary"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("enum"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("getter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("includes"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("inherit"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("interface"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("iterable"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("maplike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("namespace"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("partial"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setlike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("static"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("stringifier"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("typedef"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("unrestricted"), Spacing)), "WebIDL.ArgumentNameKeyword"), "ArgumentNameKeyword")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("attribute", "callback", "const", "deleter", "dictionary", "enum", "getter", "includes", "inherit", "interface", "iterable", "maplike", "namespace", "partial", "required", "setlike", "setter", "static", "stringifier", "typedef", "unrestricted"), pegged.peg.negLookahead!(Identifier)), "WebIDL.ArgumentNameKeyword"), "ArgumentNameKeyword")(p);
                 memo[tuple(`ArgumentNameKeyword`, p.end)] = result;
                 return result;
             }
@@ -4025,12 +4025,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("attribute"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("callback"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("const"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("deleter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("dictionary"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("enum"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("getter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("includes"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("inherit"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("interface"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("iterable"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("maplike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("namespace"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("partial"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setlike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("static"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("stringifier"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("typedef"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("unrestricted"), Spacing)), "WebIDL.ArgumentNameKeyword")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("attribute", "callback", "const", "deleter", "dictionary", "enum", "getter", "includes", "inherit", "interface", "iterable", "maplike", "namespace", "partial", "required", "setlike", "setter", "static", "stringifier", "typedef", "unrestricted"), pegged.peg.negLookahead!(Identifier)), "WebIDL.ArgumentNameKeyword")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("attribute"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("callback"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("const"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("deleter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("dictionary"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("enum"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("getter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("includes"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("inherit"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("interface"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("iterable"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("maplike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("namespace"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("partial"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("required"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setlike"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("setter"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("static"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("stringifier"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("typedef"), Spacing), pegged.peg.wrapAround!(Spacing, pegged.peg.literal!("unrestricted"), Spacing)), "WebIDL.ArgumentNameKeyword"), "ArgumentNameKeyword")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("attribute", "callback", "const", "deleter", "dictionary", "enum", "getter", "includes", "inherit", "interface", "iterable", "maplike", "namespace", "partial", "required", "setlike", "setter", "static", "stringifier", "typedef", "unrestricted"), pegged.peg.negLookahead!(Identifier)), "WebIDL.ArgumentNameKeyword"), "ArgumentNameKeyword")(TParseTree("", false,[], s));
         }
     }
     static string ArgumentNameKeyword(GetName g)
