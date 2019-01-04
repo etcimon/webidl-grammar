@@ -138,7 +138,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Namespace < "namespace" Identifier '{' NamespaceMembers '}' ';'
 
-  NamespaceMembers < (ExtendedAttributeList NamespaceMember NamespaceMembers) / eps
+  NamespaceMembers < (ExtendedAttributeList NamespaceMember)+ / eps
 
   NamespaceMember < RegularOperation / ("readonly" AttributeRest)
 
@@ -295,7 +295,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Whitespace <~ (' ' / '\t' / '\n' / '\r')+
 
-  Comment <~ ("//" (!eol .)*) / ("/*" ((!"*/" .) / eol)* "*/")
+  Comment <~ (Whitespace? (("//" (!eol .)*) / ("/*" ((!"*/" .) / eol)* "*/")) Whitespace?)+
 
   Spacing <: Whitespace / Comment / eps
 

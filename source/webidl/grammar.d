@@ -137,7 +137,7 @@ WebIDL:
 
   Namespace < "namespace" Identifier '{' NamespaceMembers '}' ';'
 
-  NamespaceMembers < (ExtendedAttributeList NamespaceMember NamespaceMembers) / eps
+  NamespaceMembers < (ExtendedAttributeList NamespaceMember)+ / eps
 
   NamespaceMember < RegularOperation / ("readonly" AttributeRest)
 
@@ -294,7 +294,7 @@ WebIDL:
 
   Whitespace <~ (' ' / '\t' / '\n' / '\r')+
 
-  Comment <~ ("//" (!eol .)*) / ("/*" ((!"*/" .) / eol)* "*/")
+  Comment <~ (Whitespace? (("//" (!eol .)*) / ("/*" ((!"*/" .) / eol)* "*/")) Whitespace?)+
 
   Spacing <: Whitespace / Comment / eps
 
@@ -2422,7 +2422,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMembers, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers")(p);
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers")(p);
         }
         else
         {
@@ -2430,7 +2430,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMembers, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers"), "NamespaceMembers")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers"), "NamespaceMembers")(p);
                 memo[tuple(`NamespaceMembers`, p.end)] = result;
                 return result;
             }
@@ -2441,12 +2441,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMembers, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMembers, Spacing)), Spacing), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers"), "NamespaceMembers")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.or!(pegged.peg.oneOrMore!(pegged.peg.wrapAround!(Spacing, pegged.peg.and!(pegged.peg.wrapAround!(Spacing, ExtendedAttributeList, Spacing), pegged.peg.wrapAround!(Spacing, NamespaceMember, Spacing)), Spacing)), pegged.peg.wrapAround!(Spacing, eps, Spacing)), "WebIDL.NamespaceMembers"), "NamespaceMembers")(TParseTree("", false,[], s));
         }
     }
     static string NamespaceMembers(GetName g)
@@ -3898,7 +3898,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/")))), "WebIDL.Comment")(p);
+            return         pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.oneOrMore!(pegged.peg.and!(pegged.peg.option!(Whitespace), pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/"))), pegged.peg.option!(Whitespace)))), "WebIDL.Comment")(p);
         }
         else
         {
@@ -3906,7 +3906,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/")))), "WebIDL.Comment"), "Comment")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.oneOrMore!(pegged.peg.and!(pegged.peg.option!(Whitespace), pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/"))), pegged.peg.option!(Whitespace)))), "WebIDL.Comment"), "Comment")(p);
                 memo[tuple(`Comment`, p.end)] = result;
                 return result;
             }
@@ -3917,12 +3917,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/")))), "WebIDL.Comment")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.oneOrMore!(pegged.peg.and!(pegged.peg.option!(Whitespace), pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/"))), pegged.peg.option!(Whitespace)))), "WebIDL.Comment")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/")))), "WebIDL.Comment"), "Comment")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.fuse!(pegged.peg.oneOrMore!(pegged.peg.and!(pegged.peg.option!(Whitespace), pegged.peg.or!(pegged.peg.and!(pegged.peg.literal!("//"), pegged.peg.zeroOrMore!(pegged.peg.and!(pegged.peg.negLookahead!(eol), pegged.peg.any))), pegged.peg.and!(pegged.peg.literal!("/*"), pegged.peg.zeroOrMore!(pegged.peg.or!(pegged.peg.and!(pegged.peg.negLookahead!(pegged.peg.literal!("*/")), pegged.peg.any), eol)), pegged.peg.literal!("*/"))), pegged.peg.option!(Whitespace)))), "WebIDL.Comment"), "Comment")(TParseTree("", false,[], s));
         }
     }
     static string Comment(GetName g)
