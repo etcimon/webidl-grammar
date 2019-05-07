@@ -3,7 +3,7 @@ import pegged.grammar;
 void main() {
 asModule("webidl.grammar","../source/webidl/grammar",
 `WebIDL:
-  Definitions < (ExtendedAttributeList Definition)* eoi
+  Definitions < (ExtendedAttributeList Definition)+ eoi
 
   Definition <
     CallbackOrInterfaceOrMixin /
@@ -293,11 +293,13 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   String <~ doublequote (!doublequote .)* doublequote
 
-  Whitespace <~ (' ' / '\t' / '\n' / '\r')+
+  Whitespace <- :(' ' / '\t' / EndOfLine)+
 
-  Comment <~ (Whitespace? (("//" (!eol .)*) / ("/*" ((!"*/" .) / eol)* "*/")) Whitespace?)+
+  EndOfLine <: ('\r' '\n') / '\n'
 
-  Spacing <: Whitespace / Comment / eps
+  Comment <~ (Whitespace? (("//" (!EndOfLine .)*) / ("/*" ((!"*/" .) / EndOfLine)* "*/")) Whitespace?)+
+
+  Spacing <- :(Whitespace / Comment)*
 
   Other2 <~ [^\t\n\r 0-9A-Za-z]
 
