@@ -201,7 +201,7 @@ WebIDL:
 
   IntegerType < "short" / ("long" "long") / "long"
 
-  StringType <- ("ByteString" / "DOMString" / "USVString") !(Identifier)
+  StringType <- ("ByteString" / "DOMString" / "USVString" / "CSSOMString") !(Identifier)
 
   PromiseType < "Promise" '<' ReturnType '>'
 
@@ -3289,7 +3289,7 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(p);
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString", "CSSOMString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(p);
         }
         else
         {
@@ -3297,7 +3297,7 @@ struct GenericWebIDL(TParseTree)
                 return *m;
             else
             {
-                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(p);
+                TParseTree result = hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString", "CSSOMString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(p);
                 memo[tuple(`StringType`, p.end)] = result;
                 return result;
             }
@@ -3308,12 +3308,12 @@ struct GenericWebIDL(TParseTree)
     {
         if(__ctfe)
         {
-            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(TParseTree("", false,[], s));
+            return         pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString", "CSSOMString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType")(TParseTree("", false,[], s));
         }
         else
         {
             forgetMemo();
-            return hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(TParseTree("", false,[], s));
+            return hooked!(pegged.peg.defined!(pegged.peg.and!(pegged.peg.keywords!("ByteString", "DOMString", "USVString", "CSSOMString"), pegged.peg.negLookahead!(Identifier)), "WebIDL.StringType"), "StringType")(TParseTree("", false,[], s));
         }
     }
     static string StringType(GetName g)

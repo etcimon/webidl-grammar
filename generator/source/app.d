@@ -202,7 +202,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   IntegerType < "short" / ("long" "long") / "long"
 
-  StringType <- ("ByteString" / "DOMString" / "USVString") !(Identifier)
+  StringType <- ("ByteString" / "DOMString" / "USVString" / "CSSOMString") !(Identifier)
 
   PromiseType < "Promise" '<' ReturnType '>'
 
