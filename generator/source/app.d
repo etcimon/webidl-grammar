@@ -6,6 +6,8 @@ asModule("webidl.grammar","../source/webidl/grammar",
   Definitions < (ExtendedAttributeList Definition)+ eoi
 
   Definition <
+    PreprocessorIf /
+    InterfaceDeclaration /
     CallbackOrInterfaceOrMixin /
     Namespace /
     Partial /
@@ -14,6 +16,12 @@ asModule("webidl.grammar","../source/webidl/grammar",
     Typedef /
     IncludesStatement
 
+  PreprocessorIf < 
+    ("#if" ((!"#endif" .) / EndOfLine)* "#endif")
+
+  InterfaceDeclaration <
+    ("interface" InterfaceDecl)
+    
   CallbackOrInterfaceOrMixin <
     ("callback" CallbackRestOrInterface) /
     ("interface" InterfaceOrMixin)
@@ -22,6 +30,10 @@ asModule("webidl.grammar","../source/webidl/grammar",
     CallbackRest / ("interface" InterfaceRest)
 
   InterfaceOrMixin < MixinRest / InterfaceRest
+
+  ImplementsDecl < "implements" Identifier ';'
+  
+  InterfaceDecl < Identifier Inheritance ';'
 
   InterfaceRest < Identifier Inheritance '{' InterfaceMembers '}' ';'
 
@@ -38,7 +50,8 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   InterfaceMembers < InterfaceMember+ / eps
 
-  InterfaceMember < ExtendedAttributeList (Const /
+  InterfaceMember < ExtendedAttributeList (PreprocessorIf /
+    Const /
     Operation /
     Stringifier /
     StaticMember /
@@ -60,7 +73,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
     RegularOperation /
     Stringifier
 
-  IncludesStatement < Identifier "includes" Identifier ';'
+  IncludesStatement < Identifier "implements" Identifier ';'
 
   Const < "const" ConstType Identifier '=' ConstValue ';'
 
@@ -98,7 +111,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   SpecialOperation < Special RegularOperation
 
-  Special < "getter" / "setter" / "deleter"
+  Special < "getter" / "setter" / "deleter" / "legacycaller"
 
   OperationRest < OptionalIdentifier '(' ArgumentList ')' ';'
 
@@ -140,7 +153,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   NamespaceMembers < (ExtendedAttributeList NamespaceMember)+ / eps
 
-  NamespaceMember < RegularOperation / ("readonly" AttributeRest)
+  NamespaceMember < Const / RegularOperation / ("readonly" AttributeRest)
 
   Dictionary < "dictionary" Identifier Inheritance '{' DictionaryMembers '}' ';'
 
@@ -156,7 +169,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   Enum < "enum" Identifier '{' EnumValueList '}' ';'
 
-  EnumValueList < String (',' String)*
+  EnumValueList <  String (',' String)* ','?
 
   CallbackRest < Identifier '=' ReturnType '(' ArgumentList ')' ';'
 
@@ -220,10 +233,12 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "Uint16Array" /
     "Uint32Array" /
     "Uint8ClampedArray" /
+    "BigInt64Array" /
+    "BigUint64Array" /
     "Float32Array" /
     "Float64Array"
 
-  ExtendedAttributeList < ('[' ExtendedAttribute (',' ExtendedAttribute)* ']') / eps
+  ExtendedAttributeList <  ('[' PreprocessorIf? ExtendedAttribute (',' ExtendedAttribute)* ']') / eps
 
   ExtendedAttributeOuter <
     ('(' ExtendedAttributeInner ')') /
@@ -245,6 +260,8 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "FrozenArray" /
     "Infinity" /
     "NaN" /
+    "ObservableArray" /
+    "Promise" /
     "USVString" /
     "any" /
     "boolean" /
@@ -258,10 +275,13 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "octet" /
     "or" /
     "optional" /
+    "record" /
     "sequence" /
     "short" /
+    "symbol" /
     "true" /
     "unsigned" /
+    "undefined" /
     "void" /
     Integer /
     Float /
@@ -278,6 +298,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
     '=' /
     '>' /
     '?' /
+    '*' /
     ArgumentNameKeyword /
     BufferRelatedType
 
@@ -285,7 +306,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   IdentifierList < Identifier (',' Identifier)*
 
-  Integer <~ '-'? ([1-9] [0-9]*) / ('0' [Xx] [0-9A-Fa-f]+) / ('0' [0-7]*)
+  Integer <~ [_\-]? ([1-9] [0-9]*) / ('0' [Xx] [0-9A-Fa-f]+) / ('0' [0-7]*)
 
   Float <~ '-'? ((([0-9]+ '.' [0-9]*) / ([0-9]* '.' [0-9]+))(('E' / 'e') ('+' / '-')? [0-9]+)?) / ([0-9]+ ('E' / 'e') ('+' / '-')? [0-9]+)
 
@@ -304,9 +325,11 @@ asModule("webidl.grammar","../source/webidl/grammar",
   Other2 <~ [^\t\n\r 0-9A-Za-z]
 
   ArgumentNameKeyword <-
-    ("attribute" /
+    ("async" /
+    "attribute" /
     "callback" /
     "const" /
+    "constructor" /
     "deleter" /
     "dictionary" /
     "enum" /
@@ -316,8 +339,10 @@ asModule("webidl.grammar","../source/webidl/grammar",
     "interface" /
     "iterable" /
     "maplike" /
+    "mixin" /
     "namespace" /
     "partial" /
+    "readonly" /
     "required" /
     "setlike" /
     "setter" /
@@ -330,7 +355,7 @@ asModule("webidl.grammar","../source/webidl/grammar",
 
   ExtendedAttributeArgList < Identifier '(' ArgumentList ')'
 
-  ExtendedAttributeIdent < Identifier '=' Identifier
+  ExtendedAttributeIdent < Identifier '=' ( String / Identifier )
 
   ExtendedAttributeIdentList < Identifier '=' '(' IdentifierList ')'
 
